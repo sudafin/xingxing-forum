@@ -1,0 +1,87 @@
+#端口信息
+server:
+  # 允许外部访问监听所有ip
+  address: 0.0.0.0
+  port: 8080
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+#redis配置
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+
+  #数据库信息
+  datasource:
+    url: jdbc:mysql://localhost:3306/xingxingforum
+    username: root
+    password: 123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  #mybatis-plus配置
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: com.xingxingforum.entity
+  configuration: #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
+    map-underscore-to-camel-case: true
+    #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+
+#日志配置
+logging:
+  level: #    把com.example.electricitybill包下的日志级别设置为debug
+    com.xingxingforum: debug
+    #    把org.springframework包下的日志级别设置为info
+    org.springframework: info
+
+#jwt配置
+jwt:
+  token:
+    expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
+    secret: ThisIsRandomSecretKey # 密钥，用于签名和验证token
+
+  #过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
+xf:
+  noAuthPaths:
+    - /workspace/**
+    - /admin/**
+    - /doc.html
+    - /v2/api-docs
+    - /swagger-ui.html
+    - /v3/api-docs
+    - /swagger-resources
+    - /webjars/**
+    - /error
+    - /test/**
+
+  swagger:
+    enable: true
+    enableResponseWrap: true
+    packagePath: com.xingxingforum.controller
+    title: My API Documentation
+    description: API documentation for my project
+    contactName: John Doe
+    contactUrl: http://example.com
+    contactEmail: john@example.com
+    version: 1.0.0
+
+# 设置redis缓存过期时间
+redis:
+  ttl:
+    default-range:
+      min: 3600    # 1小时
+      max: 7200    # 2小时
+    short-range:
+      min: 60      # 1分钟
+      max: 300     # 5分钟
+    long-range:
+      min: 7200    # 2小时
+      max: 14400   # 4小时
+    temp-range:
+      min: 10      # 10秒
+      max: 30      # 30秒
