@@ -1,7 +1,7 @@
 package com.xingxingforum.utils;
 
 
-import com.xingxingforum.constants.Constant;
+import com.xingxingforum.constants.BadRequestConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -72,7 +72,7 @@ public class WebUtils {
 
 
     public static String getRequestId() {
-        return getHeader(Constant.REQUEST_ID_HEADER);
+        return getHeader(BadRequestConstant.REQUEST_ID_HEADER);
     }
 
 

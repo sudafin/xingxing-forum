@@ -9,8 +9,8 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.JWTValidator;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import com.xingxingforum.constants.Constant;
 import com.xingxingforum.constants.ErrorInfo;
+import com.xingxingforum.constants.RedisConstant;
 import com.xingxingforum.entity.dto.admin.AdminDTO;
 import com.xingxingforum.expcetions.BadRequestException;
 import org.apache.commons.lang3.BooleanUtils;
@@ -18,22 +18,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.security.KeyPair;
 import java.time.Duration;
 import java.util.Date;
 
-import static com.xingxingforum.constants.Constant.JWT_REFRESH_TTL;
+import static com.xingxingforum.constants.RedisConstant.JWT_REFRESH_TTL;
 
 @Component
 public class JwtUtils {
 
     @Value("${jwt.token.expirationTime:}")
     private long expirationTime;
-//    @Value("${jwt.token.secret:}")
-//    private String secretKey;
     private final StringRedisTemplate stringRedisTemplate;
     private final JWTSigner jwtSigner;
-    public JwtUtils(@Value("${jwt.token.secret}") String secretKey,StringRedisTemplate stringRedisTemplate) {
-        this.jwtSigner = JWTSignerUtil.hs256(secretKey.getBytes());
+    //生成密钥工具
+
+
+    public JwtUtils(StringRedisTemplate stringRedisTemplate) {
+        KeyPair keyPair = RSAUtils.generateKeyPair();
+        this.jwtSigner = JWTSignerUtil.hs256(RSAUtils.getPrivateKey(keyPair).getBytes());
         this.stringRedisTemplate = stringRedisTemplate;
     }
     /**
@@ -62,10 +65,8 @@ public class JwtUtils {
         try {
             // 创建 JWTValidator 验证token时间实例
             JWTValidator validator = JWTValidator.of(token);
-
             // 验证签名算法
             validator.validateAlgorithm(jwtSigner);
-
             // 验证 token 是否过期
             validator.validateDate();
 
@@ -94,7 +95,7 @@ public class JwtUtils {
         // 2.生成jwt
         // 2.1.如果是记住我，则有效期7天，否则30分钟
         Duration ttl = BooleanUtils.isTrue(adminDTO.getRememberMe()) ?
-                Constant.JWT_REMEMBER_ME_TTL : JWT_REFRESH_TTL;
+                RedisConstant.JWT_REMEMBER_ME_TTL : JWT_REFRESH_TTL;
         // 2.2.生成token
         String token = JWT.create()
                 .setJWTId(jti)
@@ -104,7 +105,7 @@ public class JwtUtils {
                 .sign();
         // 3.缓存jti，有效期与token一致，过期或删除JTI后，对应的refresh-token失效
         stringRedisTemplate.opsForValue()
-                .set(Constant.JWT_REDIS_KEY_PREFIX + adminDTO.getId(), jti, ttl);
+                .set(RedisConstant.JWT_REDIS_KEY_PREFIX + adminDTO.getId(), jti, ttl);
         return token;
     }
 
@@ -137,7 +138,7 @@ public class JwtUtils {
         }
         // 4.数据格式校验
         Object adminPayload = jwt.getPayload("adminDTO");
-        Object jtiPayload = jwt.getPayload(Constant.PAYLOAD_JTI_KEY);
+        Object jtiPayload = jwt.getPayload(RedisConstant.PAYLOAD_JTI_KEY);
         if (jtiPayload == null || adminPayload == null) {
             // 数据为空
             throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
@@ -153,7 +154,7 @@ public class JwtUtils {
         }
 
         // 6.JTI校验
-        String jti = stringRedisTemplate.opsForValue().get(Constant.JWT_REDIS_KEY_PREFIX + adminDTO.getId());
+        String jti = stringRedisTemplate.opsForValue().get(RedisConstant.JWT_REDIS_KEY_PREFIX + adminDTO.getId());
         if (!StringUtils.equals(jti, jtiPayload.toString())) {
             // jti不一致
             throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
@@ -161,6 +162,6 @@ public class JwtUtils {
         return adminDTO;
     }
     public void cleanJtiCache() {
-        stringRedisTemplate.delete(Constant.JWT_REDIS_KEY_PREFIX + UserContextUtils.getUser());
+        stringRedisTemplate.delete(RedisConstant.JWT_REDIS_KEY_PREFIX + UserContextUtils.getUser());
     }
 }

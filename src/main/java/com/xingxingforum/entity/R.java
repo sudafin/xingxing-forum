@@ -1,6 +1,6 @@
 package com.xingxingforum.entity;
 
-import com.xingxingforum.constants.Constant;
+import com.xingxingforum.constants.BadRequestConstant;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -49,7 +49,7 @@ public class R<T> {
         this.code = code;
         this.msg = msg;
         this.data = data;
-        this.requestId = MDC.get(Constant.REQUEST_ID_HEADER);
+        this.requestId = MDC.get(BadRequestConstant.REQUEST_ID_HEADER);
     }
 
     public boolean success(){

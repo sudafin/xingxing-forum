@@ -96,9 +96,6 @@ public class AuthorizeFilter extends OncePerRequestFilter {
         }
         return false;
     }
-
-
-
     @Override
     public void destroy() {
     }

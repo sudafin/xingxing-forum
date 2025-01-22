@@ -1,9 +1,18 @@
 package com.xingxingforum.controller;
-import com.xingxingforum.entity.dto.admin.AdminDTO;
-import com.xingxingforum.entity.dto.admin.UserDTO;
+import com.xingxingforum.config.MailConfig;
+import com.xingxingforum.entity.dto.admin.LoginMailDTO;
+import com.xingxingforum.utils.StringUtils;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import com.xingxingforum.entity.R;
+
+import javax.annotation.Resource;
+import javax.mail.MessagingException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -14,24 +23,57 @@ import com.xingxingforum.entity.R;
  * @since 2025-01-22
  */
 @RestController
-@RequestMapping("/test")
+@RequestMapping("/user")
 @Slf4j
+@ApiOperation(value = "用户管理")
 public class UsersController {
+    @Resource
+    private MailConfig mailMsg;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
-    @GetMapping()
-    public R<String> test(){
-        return R.ok("测试");
+    /**
+     *
+     * @param email 登录邮箱
+     * @return 返回R信息
+     */
+    @ApiOperation(value = "发送邮箱验证码")
+    @GetMapping(value = "send/{email}")
+    public R<Object> sendCode(@PathVariable String email) {
+        log.info("邮箱码：{}",email);
+        //先从redis中取出验证码信息,看是否有重复的信息
+        String code = redisTemplate.opsForValue().get(email);
+        if (!StringUtils.isEmpty(code)) {
+            return R.ok("验证码已发送，请勿重复发送！");
+        }
+        //原子操作,因为我们要异步获取短信,因为短信操作会长时间阻塞主线程
+        AtomicBoolean res = new AtomicBoolean(false);
+        CompletableFuture.runAsync(() -> {
+            try {
+                res.set(mailMsg.mail(email));
+            } catch (MessagingException e) {
+                throw new RuntimeException(e);
+            }
+        }).whenComplete((v, e) -> {
+            if (e != null) {
+                log.error("发送邮件失败：{}", e.getMessage());
+            }
+            log.info("发送邮件成功：{}", res.get());
+        });
+        return R.ok(("验证码发送成功！"));
     }
-    @PostMapping("")
-    public R<String> test2(@RequestParam String name){
-        return R.ok(name);
-    }
-    @PutMapping("")
-    public R<String> test3(@RequestBody UserDTO userDTO){
-        return R.ok(userDTO.getUserName());
-    }
-    @DeleteMapping("/{id}")
-    public R<String> test4(@PathVariable int id){
-        return R.ok(id+"");
+    @ApiOperation(value = "登录")
+    @PostMapping(value = "login")
+    public R<Object> login(@RequestBody LoginMailDTO loginMailDTO) {
+        log.info("邮箱码：{} 验证码: {}",loginMailDTO.getEmail(),loginMailDTO.getCode());
+        String code = redisTemplate.opsForValue().get(loginMailDTO.getEmail());
+        log.info("缓存中的验证码: {}",code);
+        if(code == null){
+            return R.error("验证码已过期！");
+        }
+        if (!StringUtils.equals(code, loginMailDTO.getCode())) {
+            return R.error("验证码错误！");
+        }
+        return R.ok(null);
     }
 }

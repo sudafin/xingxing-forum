@@ -1,17 +1,35 @@
 #端口信息
-server:
-  # 允许外部访问监听所有ip
+server: # 允许外部访问监听所有ip
   address: 0.0.0.0
   port: 8080
 spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-#redis配置
+  #redis配置
   redis:
     host: 127.0.0.1
     port: 6379
-    password: 123456
+  mail:
+    # 发送者邮箱
+    username: 1148199284@qq.com
+    #申请到的授权码
+    password: yxtarjypltmaihde
+    # 配置 SMTP 服务器地址
+    host: smtp.qq.com
+    # 端口号465或587
+    port: 465
+    protocol: smtps
+    # 默认的邮件编码为UTF-8
+    default-encoding: UTF-8
+    # 配置SSL 加密工厂
+    properties:
+      mail:
+        smtp:
+          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+          #表示开启 DEBUG 模式，这样，邮件发送过程的日志会在控制台打印出来，方便排查错误
+          debug: true
+          ssl: true
 
   #数据库信息
   datasource:
@@ -43,13 +61,15 @@ logging:
 jwt:
   token:
     expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
-    secret: ThisIsRandomSecretKey # 密钥，用于签名和验证token
 
-  #过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
+#过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
 xf:
   noAuthPaths:
     - /workspace/**
-    - /admin/**
+    - /user/login/**
+    - /user/register/**
+    - /user/send/**
+    - /user/logout/**
     - /doc.html
     - /v2/api-docs
     - /swagger-ui.html
@@ -85,3 +105,5 @@ redis:
     temp-range:
       min: 10      # 10秒
       max: 30      # 30秒
+
+

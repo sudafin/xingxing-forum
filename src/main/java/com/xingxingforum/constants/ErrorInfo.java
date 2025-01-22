@@ -6,13 +6,7 @@ public interface ErrorInfo {
         String OK = "OK";
        String INVALID_VERIFY_CODE = "验证码错误";
 
-
         String SERVER_INTER_ERROR = "服务器内部错误";
-
-        String DB_SAVE_EXCEPTION = "数据新增失败";
-        String DB_DELETE_EXCEPTION = "数据删除失败";
-        String DB_BATCH_DELETE_EXCEPTION = "数据批量删除失败";
-        String DB_UPDATE_EXCEPTION = "数据更新失败";
         String DB_SORT_FIELD_NOT_FOUND = "排序字段不存在";
         String OPERATE_FAILED = "操作失败";
 
