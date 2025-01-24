@@ -13,7 +13,7 @@ public interface BadRequestConstant {
     String ACCOUNT_PASSWORD_ERROR = "账号或密码错误";
     String ROLE_NOT_EXIST = "角色不存在";
     String DATA_FIELD_NAME_CREATE_TIME = "createTime";
-    String USER_NOT_EXIST = "用户不存在";
+    String USER_ACCOUNT_PASSWORD_ERROR = "用户账号密码有误";
     String USER_ALREADY_EXIST = "用户已存在";
     String REQUEST_ID_HEADER = "X-Request-ID";
 }

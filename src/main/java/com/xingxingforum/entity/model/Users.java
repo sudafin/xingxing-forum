@@ -29,20 +29,16 @@ public class Users implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
-
-    @ApiModelProperty(value = "用户名")
-    @TableField("username")
-    private String username;
 
     @ApiModelProperty(value = "邮箱")
     @TableField("email")
     private String email;
 
-    @ApiModelProperty(value = "密码哈希")
-    @TableField("password_hash")
-    private String passwordHash;
+    @ApiModelProperty(value = "密码")
+    @TableField("password")
+    private String password;
 
     @TableField("avatar")
     private String avatar;

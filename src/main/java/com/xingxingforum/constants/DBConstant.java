@@ -15,4 +15,5 @@ public interface DBConstant {
     String DATA_QUERY_FAILURE = "数据查询失败";
     String DATA_QUERY_EMPTY = "数据查询为空";
     String DATA_UPDATE_FAILURE = "数据更新失败";
+    String DATA_SAVE_ERROR = "数据保存失败";
 }

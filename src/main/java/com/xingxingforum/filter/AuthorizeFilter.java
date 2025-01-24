@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.xingxingforum.config.properties.AuthProperties;
-import com.xingxingforum.entity.dto.admin.AdminDTO;
+import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -54,8 +54,10 @@ public class AuthorizeFilter extends OncePerRequestFilter {
         }
 
         // 校验 token
-        AdminDTO adminDTO;
+        UserDTO userDTO;
         try {
+            //去掉Bearer
+            token = token.replace("Bearer ", "");
             boolean checkToken = jwtUtils.checkToken(token);
             if (!checkToken) {
                 // 如果 token 校验失败，返回 401 未授权
@@ -64,7 +66,7 @@ public class AuthorizeFilter extends OncePerRequestFilter {
                 return;
             }
             // 如果校验成功，解析 token 获取用户信息
-            adminDTO = jwtUtils.parseToken(token);
+            userDTO = jwtUtils.parseToken(token);
         } catch (Exception e) {
             log.error("令牌校验失败，token = {}, path = {}", token, path, e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -73,14 +75,14 @@ public class AuthorizeFilter extends OncePerRequestFilter {
         }
 
         // 如果用户信息为空，说明 token 失效或伪造
-        if (ObjectUtil.isEmpty(adminDTO)) {
+        if (ObjectUtil.isEmpty(userDTO)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Unauthorized: Token is invalid or expired");
             return;
         }
 
         // 将用户信息放入请求头中，供后续处理使用
-        requestWrapper.setAttribute("userInfo", JSONUtil.toJsonStr(adminDTO));
+        requestWrapper.setAttribute("userInfo", JSONUtil.toJsonStr(userDTO));
 
 
         filterChain.doFilter(requestWrapper, response);  // 继续过滤链

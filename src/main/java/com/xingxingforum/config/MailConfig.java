@@ -22,8 +22,6 @@ public class MailConfig {
     @Value("${spring.mail.username}")
     private String from;
     public boolean mail(String email) throws MessagingException {
-
-
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         //生成随机验证码
         String code = IdUtil.randomUUID().substring(0, 6);

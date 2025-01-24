@@ -4,7 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 
 import cn.hutool.json.JSONUtil;
 
-import com.xingxingforum.entity.dto.admin.AdminDTO;
+import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.utils.UserContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -15,13 +15,13 @@ public class UserInfoInterceptor implements HandlerInterceptor {
     //拦截器
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Object userinfo = request.getAttribute("userInfo");
-        AdminDTO adminDTO = JSONUtil.parseObj(userinfo).toBean(AdminDTO.class);
+        UserDTO userDTO = JSONUtil.parseObj(userinfo).toBean(UserDTO.class);
         //转为Object对象转为adminDTO
-        if(ObjectUtil.isEmpty(adminDTO)){
+        if(ObjectUtil.isEmpty(userDTO)){
             response.setStatus(401);
             return false;
         }
-        UserContextUtils.setUser(adminDTO.getId());
+        UserContextUtils.setUser(userDTO.getId());
         return true;
     }
     //拦截后

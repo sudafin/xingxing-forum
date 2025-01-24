@@ -1,6 +1,9 @@
 package com.xingxingforum.controller;
+
 import com.xingxingforum.config.MailConfig;
-import com.xingxingforum.entity.dto.admin.LoginMailDTO;
+import com.xingxingforum.entity.dto.users.LoginFormDTO;
+import com.xingxingforum.entity.dto.users.RegisterMailDTO;
+import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +14,13 @@ import com.xingxingforum.entity.R;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.validation.Valid;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author huangdada
@@ -31,16 +35,17 @@ public class UsersController {
     private MailConfig mailMsg;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Resource
+    private IUsersService usersService;
 
     /**
-     *
      * @param email 登录邮箱
      * @return 返回R信息
      */
     @ApiOperation(value = "发送邮箱验证码")
     @GetMapping(value = "send/{email}")
     public R<Object> sendCode(@PathVariable String email) {
-        log.info("邮箱码：{}",email);
+        log.info("邮箱码：{}", email);
         //先从redis中取出验证码信息,看是否有重复的信息
         String code = redisTemplate.opsForValue().get(email);
         if (!StringUtils.isEmpty(code)) {
@@ -62,18 +67,22 @@ public class UsersController {
         });
         return R.ok(("验证码发送成功！"));
     }
-    @ApiOperation(value = "登录")
-    @PostMapping(value = "login")
-    public R<Object> login(@RequestBody LoginMailDTO loginMailDTO) {
-        log.info("邮箱码：{} 验证码: {}",loginMailDTO.getEmail(),loginMailDTO.getCode());
-        String code = redisTemplate.opsForValue().get(loginMailDTO.getEmail());
-        log.info("缓存中的验证码: {}",code);
-        if(code == null){
+
+    @ApiOperation(value = "用户注册")
+    @PostMapping(value = "register")
+    public R<Object> login(@RequestBody @Valid RegisterMailDTO registerMailDTO) {
+        String code = redisTemplate.opsForValue().get(registerMailDTO.getEmail());
+        if (code == null) {
             return R.error("验证码已过期！");
         }
-        if (!StringUtils.equals(code, loginMailDTO.getCode())) {
+        if (!StringUtils.equals(code, registerMailDTO.getCode())) {
             return R.error("验证码错误！");
         }
-        return R.ok(null);
+        return usersService.register(registerMailDTO);
+    }
+    @ApiOperation(value = "用户登录")
+    @PostMapping(value = "login")
+    public R<Object> login(@RequestBody @Valid LoginFormDTO loginFormDTO) {
+        return usersService.login(loginFormDTO);
     }
 }
