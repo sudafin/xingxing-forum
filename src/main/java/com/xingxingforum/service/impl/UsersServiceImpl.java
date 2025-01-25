@@ -18,7 +18,6 @@ import com.xingxingforum.mapper.UsersMapper;
 import com.xingxingforum.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xingxingforum.utils.JwtUtils;
-import com.xingxingforum.utils.WebUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,6 +50,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             return R.error("邮箱已存在");
         }
         user = new Users();
+        user.setLevel(1);
         String encodePassword = passwordEncoder.encode(registerMailDTO.getPassword());
         user.setPassword(encodePassword);
         user.setEmail(registerMailDTO.getEmail());
@@ -72,22 +72,43 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         if(!passwordEncoder.matches(loginFormDTO.getPassword(), user.getPassword())){
             return R.error(BadRequestConstant.USER_ACCOUNT_PASSWORD_ERROR);
         }
-        String token;
-        UserDTO userDTO = UserDTO.builder().id(user.getId()).
+        String accessToken;
+        String refreshToken;
+        UserDTO userDTO = UserDTO.builder().
+                id(user.getId()).
                 nickName(user.getNickname()).
                 email(user.getEmail()).
                 avatar(user.getAvatar()).
                 bio(user.getBio()).
                 isAdmin(user.getIsAdmin()).
                 isActive(user.getIsActive()).
+                sex(user.getSex()).
+                ipAddress(user.getIpAddress()).
+                address(user.getAddress()).
+                birthday(user.getBirthday()).
+                profession(user.getProfession()).
+                school(user.getSchool()).
+                Level(user.getLevel()).
                 build();
         try {
             //生成token
-            token = jwtUtils.createToken(userDTO);
+            accessToken = jwtUtils.createToken(userDTO);
+            refreshToken = jwtUtils.createRefreshToken(userDTO);
         } catch (Exception e) {
             log.error("生成token失败", e);
             throw new UnauthorizedException(BadRequestConstant.TOKEN_GENERATE_FAILED);
         }
-        return R.ok(LoginVO.builder().userDTO(userDTO).token(token).build());
+        return R.ok(LoginVO.builder().userDTO(userDTO).token(accessToken).refreshToken(refreshToken).build());
+    }
+
+    @Override
+    public R<String> refreshToken(String refreshToken) {
+        // 1.校验refresh-token,校验JTI
+        UserDTO userDTO = jwtUtils.parseRefreshToken(refreshToken);
+        // 2.生成新的access-token
+        String accessToken = jwtUtils.createToken(userDTO);
+        // 3.返回新的token
+        return R.ok(accessToken);
     }
 }
+

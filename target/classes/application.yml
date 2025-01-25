@@ -61,7 +61,7 @@ logging:
 jwt:
   token:
 #    expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
-    expirationTime: 30000
+    expirationTime: 120000
 
 #过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
 xf:
@@ -69,6 +69,7 @@ xf:
     - /workspace/**
     - /user/login/**
     - /user/register/**
+    - /user/refresh/**
     - /user/send/**
     - /user/logout/**
     - /doc.html

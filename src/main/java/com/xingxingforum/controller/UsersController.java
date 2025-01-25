@@ -3,6 +3,7 @@ package com.xingxingforum.controller;
 import com.xingxingforum.config.MailConfig;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
+import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
 import io.swagger.annotations.ApiOperation;
@@ -84,5 +85,19 @@ public class UsersController {
     @PostMapping(value = "login")
     public R<Object> login(@RequestBody @Valid LoginFormDTO loginFormDTO) {
         return usersService.login(loginFormDTO);
+    }
+    @ApiOperation("刷新token")
+    @GetMapping(value = "refresh")
+    public R<String> refreshToken(@RequestParam String refreshToken) {
+        if(refreshToken == null){
+            throw new BadRequestException("登录超时");
+        }
+        return usersService.refreshToken(refreshToken);
+    }
+
+    @ApiOperation(value = "测试")
+    @GetMapping(value = "test")
+    public R<Object> test() {
+        return R.ok("测试成功！");
     }
 }

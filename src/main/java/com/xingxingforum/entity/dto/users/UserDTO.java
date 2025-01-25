@@ -3,6 +3,8 @@ package com.xingxingforum.entity.dto.users;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class UserDTO {
@@ -11,10 +13,14 @@ public class UserDTO {
     private String email;
     private String avatar;
     private String bio;
-    private int Level;
-    private boolean isAdmin;
-    private boolean isActive;
-    private boolean sex;
+    private Integer Level;
+    private Boolean isAdmin;
+    private Boolean isActive;
+    private Integer sex;
     private String ipAddress;
     private String address;
+    private LocalDateTime birthday;
+    private String profession;
+    private String school;
+
 }

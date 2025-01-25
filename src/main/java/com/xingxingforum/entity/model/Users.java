@@ -1,5 +1,6 @@
 package com.xingxingforum.entity.model;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -10,7 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.baomidou.mybatisplus.annotation.TableField;
 
 /**
  * <p>
@@ -18,7 +18,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
  * </p>
  *
  * @author huangdada
- * @since 2025-01-22
+ * @since 2025-01-25
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -32,11 +32,9 @@ public class Users implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
-    @ApiModelProperty(value = "邮箱")
     @TableField("email")
     private String email;
 
-    @ApiModelProperty(value = "密码")
     @TableField("password")
     private String password;
 
@@ -64,16 +62,32 @@ public class Users implements Serializable {
     @TableField("updated_at")
     private LocalDateTime updatedAt;
 
+    @ApiModelProperty(value = "性别")
     @TableField("sex")
-    private Boolean sex;
+    private Integer sex;
 
+    @ApiModelProperty(value = "ip地址")
     @TableField("ip_address")
     private String ipAddress;
 
+    @ApiModelProperty(value = "个人地址")
     @TableField("address")
     private String address;
 
+    @ApiModelProperty(value = "等级")
     @TableField("level")
     private Integer level;
+
+    @ApiModelProperty(value = "生日")
+    @TableField("birthday")
+    private LocalDateTime birthday;
+
+    @ApiModelProperty(value = "职业")
+    @TableField("profession")
+    private String profession;
+
+    @TableField("school")
+    private String school;
+
 
 }

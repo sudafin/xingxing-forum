@@ -1,7 +1,7 @@
 package com.xingxingforum.mapper;
 
-import com.xingxingforum.entity.model.Users;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xingxingforum.entity.model.Users;
 
 /**
  * <p>

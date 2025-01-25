@@ -13,7 +13,6 @@ import com.xingxingforum.constants.ErrorInfo;
 import com.xingxingforum.constants.RedisConstant;
 import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.expcetions.BadRequestException;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.util.Date;
 
-import static com.xingxingforum.constants.RedisConstant.JWT_REFRESH_TTL;
+import static com.xingxingforum.constants.Constant.JWT_REFRESH_TTL;
 
 @Component
 public class JwtUtils {
@@ -46,17 +45,16 @@ public class JwtUtils {
      */
     public String createToken(UserDTO userDTO){
                 //将密钥算法加密生成签名,防止token被修改
-        String token = JWT.create()
-                .setPayload("userDTO", userDTO)
+        return JWT.create()
+                .setPayload("payload", userDTO)
                 .setExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .setSigner(jwtSigner)
                 .sign();
-        return token;
     }
 
     //解析token
     public UserDTO parseToken(String token){
-        Object payload = JWT.of(token).getPayload("adminDTO");
+        Object payload = JWT.of(token).getPayload("payload");
         return BeanUtil.toBean(payload, UserDTO.class);
     }
 
@@ -93,12 +91,12 @@ public class JwtUtils {
         // 1.生成 JTI
         String jti = UUID.randomUUID().toString(true);
         // 2.生成jwt
-        // 2.1.如果是记住我，则有效期7天，否则30分钟
+        // 2.1 有效期7天
         Duration ttl = JWT_REFRESH_TTL;
         // 2.2.生成token
         String token = JWT.create()
                 .setJWTId(jti)
-                .setPayload("userDTO", userDTO)
+                .setPayload("payload", userDTO)
                 .setExpiresAt(new Date(System.currentTimeMillis() + ttl.toMillis()))
                 .setSigner(jwtSigner)
                 .sign();
@@ -136,9 +134,9 @@ public class JwtUtils {
             throw new BadRequestException(400, ErrorInfo.Msg.EXPIRED_TOKEN);
         }
         // 4.数据格式校验
-        Object adminPayload = jwt.getPayload("userDTO");
+        Object payload = jwt.getPayload("payload");
         Object jtiPayload = jwt.getPayload(RedisConstant.PAYLOAD_JTI_KEY);
-        if (jtiPayload == null || adminPayload == null) {
+        if (jtiPayload == null || payload == null) {
             // 数据为空
             throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
         }
@@ -146,7 +144,7 @@ public class JwtUtils {
         // 5.数据解析
         UserDTO userDTO;
         try {
-            userDTO = ((JSONObject) adminPayload).toBean(UserDTO.class);
+            userDTO = ((JSONObject) payload).toBean(UserDTO.class);
         } catch (RuntimeException e) {
             // 数据格式有误
             throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);

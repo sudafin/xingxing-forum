@@ -37,6 +37,7 @@ public class AuthorizeFilter extends OncePerRequestFilter {
         HttpServletRequest requestWrapper = new CxmHttpServletRequestWrapper((HttpServletRequest) request);
         // 获取请求路径
         String path  = request.getRequestURI();
+        log.info("RemoteHost{} RemoveAddr{}",requestWrapper.getRemoteHost() , requestWrapper.getRemoteAddr());
         // 查看请求路径是否在这个白名单中
         if (isExclude(path)) {
             filterChain.doFilter(requestWrapper, response);  // 白名单路径跳过过滤
@@ -97,8 +98,5 @@ public class AuthorizeFilter extends OncePerRequestFilter {
             }
         }
         return false;
-    }
-    @Override
-    public void destroy() {
     }
 }
