@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.xingxingforum.utils.RSAUtils;
+import com.xingxingforum.utils.SearchIPUtils;
 import org.apache.xmlbeans.impl.tool.CodeGenUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.time.Duration;
 
@@ -44,7 +46,7 @@ class XingxingForumApplicationTests {
         String code = IdUtil.randomUUID().substring(0, 6);
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
         //设置一个html邮件信息
-helper.setText(
+        helper.setText(
     "<!DOCTYPE html>" +
     "<html lang='zh-CN'>" +
     "<head>" +
@@ -130,4 +132,8 @@ helper.setText(
 
     }
 
+    @Test
+    void testIp() throws IOException {
+        System.out.println(SearchIPUtils.getIP("220.181.108.157"));
+    }
 }

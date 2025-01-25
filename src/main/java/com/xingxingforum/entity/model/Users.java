@@ -64,5 +64,16 @@ public class Users implements Serializable {
     @TableField("updated_at")
     private LocalDateTime updatedAt;
 
+    @TableField("sex")
+    private Boolean sex;
+
+    @TableField("ip_address")
+    private String ipAddress;
+
+    @TableField("address")
+    private String address;
+
+    @TableField("level")
+    private Integer level;
 
 }

@@ -11,6 +11,10 @@ public class UserDTO {
     private String email;
     private String avatar;
     private String bio;
+    private int Level;
     private boolean isAdmin;
     private boolean isActive;
+    private boolean sex;
+    private String ipAddress;
+    private String address;
 }

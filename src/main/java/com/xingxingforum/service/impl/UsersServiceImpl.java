@@ -13,6 +13,7 @@ import com.xingxingforum.entity.model.Users;
 import com.xingxingforum.entity.vo.LoginVO;
 import com.xingxingforum.expcetions.DbException;
 import com.xingxingforum.expcetions.UnauthorizedException;
+import com.xingxingforum.mapper.FollowsMapper;
 import com.xingxingforum.mapper.UsersMapper;
 import com.xingxingforum.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -39,7 +40,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private PasswordEncoder passwordEncoder;
     @Resource
     private JwtUtils jwtUtils;
-
+    @Resource
+    private FollowsMapper followsMapper;
 
     @Override
     public R<Object> register(@NotNull RegisterMailDTO registerMailDTO) {

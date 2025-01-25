@@ -170,12 +170,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+<!--        用于在idea显示not null等注释-->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>26.0.1</version>
             <scope>compile</scope>
         </dependency>
+<!--        查询ip地址来拿到所属地的依赖-->
+        <dependency>
+            <groupId>org.lionsoul</groupId>
+            <artifactId>ip2region</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
