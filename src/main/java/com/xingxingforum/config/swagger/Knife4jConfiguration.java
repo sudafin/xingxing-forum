@@ -1,6 +1,7 @@
 package com.xingxingforum.config.swagger;
 
 import cn.hutool.core.convert.ConverterRegistry;
+import com.xingxingforum.config.properties.SwaggerConfigProperties;
 import com.xingxingforum.entity.R;
 import com.xingxingforum.utils.TjTemporalConverter;
 import com.fasterxml.classmate.TypeResolver;
@@ -23,7 +24,7 @@ import java.time.LocalDateTime;
  * 核心配置类
  */
 @Configuration
-@ConditionalOnProperty(prefix = "eb.swagger", name = "enable",havingValue = "true")
+@ConditionalOnProperty(prefix = "xf.swagger", name = "enable",havingValue = "true")
 @EnableConfigurationProperties(SwaggerConfigProperties.class)
 public class Knife4jConfiguration {
 
@@ -58,13 +59,13 @@ public class Knife4jConfiguration {
     //以下都是处理响应的
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "tj.swagger", name = "enableResponseWrap",havingValue = "true")
+    @ConditionalOnProperty(prefix = "xf.swagger", name = "enableResponseWrap",havingValue = "true")
     public BaseSwaggerResponseModelPlugin baseSwaggerResponseModelPlugin(){
         return new BaseSwaggerResponseModelPlugin();
     }
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "tj.swagger", name = "enableResponseWrap",havingValue = "true")
+    @ConditionalOnProperty(prefix = "xf.swagger", name = "enableResponseWrap",havingValue = "true")
     public BaseSwaggerResponseBuilderPlugin baseSwaggerResponseBuilderPlugin(){
         return new BaseSwaggerResponseBuilderPlugin();
     }

@@ -16,4 +16,6 @@ public interface BadRequestConstant {
     String USER_ACCOUNT_PASSWORD_ERROR = "用户账号密码有误";
     String USER_ALREADY_EXIST = "用户已存在";
     String REQUEST_ID_HEADER = "X-Request-ID";
+    String User_NOT_EXIST = "用户不存在";
+    String FORUM_NOT_EXIST =  "版块不存在";
 }

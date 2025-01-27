@@ -1,11 +1,15 @@
 package com.xingxingforum.controller;
 
+import com.qiniu.util.Auth;
 import com.xingxingforum.config.MailConfig;
+import com.xingxingforum.config.properties.OssProperties;
+import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RestController
 @RequestMapping("/user")
 @Slf4j
-@ApiOperation(value = "用户管理")
+@Api(tags = "用户管理")
 public class UsersController {
     @Resource
     private MailConfig mailMsg;
@@ -38,13 +42,15 @@ public class UsersController {
     private StringRedisTemplate redisTemplate;
     @Resource
     private IUsersService usersService;
+    @Resource
+    private OssProperties ossProperties;
 
     /**
      * @param email 登录邮箱
      * @return 返回R信息
      */
     @ApiOperation(value = "发送邮箱验证码")
-    @GetMapping(value = "send/{email}")
+    @GetMapping(value = "token/send/{email}")
     public R<Object> sendCode(@PathVariable String email) {
         log.info("邮箱码：{}", email);
         //先从redis中取出验证码信息,看是否有重复的信息
@@ -70,7 +76,7 @@ public class UsersController {
     }
 
     @ApiOperation(value = "用户注册")
-    @PostMapping(value = "register")
+    @PostMapping(value = "token/register")
     public R<Object> login(@RequestBody @Valid RegisterMailDTO registerMailDTO) {
         String code = redisTemplate.opsForValue().get(registerMailDTO.getEmail());
         if (code == null) {
@@ -81,13 +87,25 @@ public class UsersController {
         }
         return usersService.register(registerMailDTO);
     }
+
+    /**
+     *
+     * @param loginFormDTO 登录信息
+     * @return R
+     */
     @ApiOperation(value = "用户登录")
-    @PostMapping(value = "login")
+    @PostMapping(value = "token/login")
     public R<Object> login(@RequestBody @Valid LoginFormDTO loginFormDTO) {
         return usersService.login(loginFormDTO);
     }
+
+    /**
+     *
+     * @param refreshToken 刷新token
+     * @return R
+     */
     @ApiOperation("刷新token")
-    @GetMapping(value = "refresh")
+    @GetMapping(value = "token/refresh")
     public R<String> refreshToken(@RequestParam String refreshToken) {
         if(refreshToken == null){
             throw new BadRequestException("登录超时");
@@ -95,9 +113,25 @@ public class UsersController {
         return usersService.refreshToken(refreshToken);
     }
 
-    @ApiOperation(value = "测试")
-    @GetMapping(value = "test")
-    public R<Object> test() {
-        return R.ok("测试成功！");
+    @ApiOperation("获取oss的token")
+    @GetMapping(value = "token/oss")
+    public R<String> getOssToken() {
+        Auth auth = Auth.create(ossProperties.getAccessKey(), ossProperties.getSecretKey());
+        String ossToken = auth.uploadToken(ossProperties.getBucket());
+        if(ossToken == null){
+            throw new BadRequestException("获取ossToken失败");
+        }
+        return R.ok(ossToken);
+    }
+
+    /**
+     *
+     * @param infoDTO 用户信息
+     * @return R
+     */
+    @ApiOperation("初次填写信息")
+    @PostMapping(value = "info")
+    public R<Object> info(@RequestBody @Valid InfoDTO infoDTO) {
+        return usersService.info(infoDTO);
     }
 }

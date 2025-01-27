@@ -1,8 +1,10 @@
 package com.xingxingforum.entity.dto.users;
 
+import com.xingxingforum.enums.SexEnum;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,10 +18,10 @@ public class UserDTO {
     private Integer Level;
     private Boolean isAdmin;
     private Boolean isActive;
-    private Integer sex;
+    private SexEnum sex;
     private String ipAddress;
     private String address;
-    private LocalDateTime birthday;
+    private LocalDate birthday;
     private String profession;
     private String school;
 

@@ -55,32 +55,32 @@ logging:
   level: #    把com.example.electricitybill包下的日志级别设置为debug
     com.xingxingforum: debug
     #    把org.springframework包下的日志级别设置为info
-    org.springframework: info
+    org.springframework: debug
+
+
 
 #jwt配置
 jwt:
   token:
 #    expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
-    expirationTime: 120000
+    expirationTime: 3600000
 
 #过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
 xf:
   noAuthPaths:
     - /workspace/**
-    - /user/login/**
-    - /user/register/**
-    - /user/refresh/**
-    - /user/send/**
-    - /user/logout/**
+    - /user/token/**
+    - /forum/list
     - /doc.html
     - /v2/api-docs
     - /swagger-ui.html
     - /v3/api-docs
-    - /swagger-resources
+    - /swagger-resources/**
     - /webjars/**
     - /error
     - /test/**
 
+#swagger的配置信息
   swagger:
     enable: true
     enableResponseWrap: true
@@ -108,4 +108,13 @@ redis:
       min: 10      # 10秒
       max: 30      # 30秒
 
-
+#七牛云的oss配置信息
+qiniu:
+  accessKey:
+    q8neFWAEe139SOkkrh3rFg1TaKJ_wg8GOQSqZIee
+  secretKey:
+    -yuyyTHk9oOA3fnB53c3m-0atg0QJC8sTGYNCBZv
+  bucket:
+    xingxingforum
+  domainOfBucket:
+    http://sqoq6d4ek.hn-bkt.clouddn.com/

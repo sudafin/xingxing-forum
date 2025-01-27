@@ -1,7 +1,11 @@
 package com.xingxingforum.service;
 
+import com.xingxingforum.entity.R;
 import com.xingxingforum.entity.model.Forums;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.xingxingforum.entity.vo.ForumListVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IForumsService extends IService<Forums> {
 
+    R<List<ForumListVO>> getForumsList();
 }

@@ -62,5 +62,7 @@ public class Forums implements Serializable {
     @TableField("updated_at")
     private LocalDateTime updatedAt;
 
+    @TableField("avatar")
+    private String avatar;
 
 }

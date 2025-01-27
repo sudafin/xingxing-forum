@@ -1,28 +1,44 @@
 package com.xingxingforum.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xingxingforum.config.FileURLConfig;
 import com.xingxingforum.constants.BadRequestConstant;
 
 import com.xingxingforum.constants.DBConstant;
 
 import com.xingxingforum.entity.R;
+import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.xingxingforum.entity.dto.users.UserDTO;
+import com.xingxingforum.entity.model.Forums;
+import com.xingxingforum.entity.model.UserForumRelations;
 import com.xingxingforum.entity.model.Users;
 import com.xingxingforum.entity.vo.LoginVO;
+import com.xingxingforum.enums.RelationEnum;
+import com.xingxingforum.enums.SexEnum;
+import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.expcetions.DbException;
 import com.xingxingforum.expcetions.UnauthorizedException;
 import com.xingxingforum.mapper.FollowsMapper;
+import com.xingxingforum.mapper.ForumsMapper;
+import com.xingxingforum.mapper.UserForumRelationsMapper;
 import com.xingxingforum.mapper.UsersMapper;
+import com.xingxingforum.service.IUserForumRelationsService;
 import com.xingxingforum.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xingxingforum.utils.CollUtils;
 import com.xingxingforum.utils.JwtUtils;
+import com.xingxingforum.utils.UserContextUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -41,7 +57,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private JwtUtils jwtUtils;
     @Resource
     private FollowsMapper followsMapper;
-
+    @Resource
+    private IUserForumRelationsService userForumRelationsService;
+    @Resource
+    private ForumsMapper forumsMapper;
+    @Resource
+    private FileURLConfig fileURLConfig;
     @Override
     public R<Object> register(@NotNull RegisterMailDTO registerMailDTO) {
         //判断邮箱是否存在
@@ -109,6 +130,35 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         String accessToken = jwtUtils.createToken(userDTO);
         // 3.返回新的token
         return R.ok(accessToken);
+    }
+
+    @Override
+    public R<Object> info(@Valid InfoDTO infoDTO) {
+        Long userId = UserContextUtils.getUser();
+        Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getId, userId));
+        if (user == null) {
+            return R.error(BadRequestConstant.User_NOT_EXIST);
+        }
+        String avatarURL = fileURLConfig.uploadFile(infoDTO.getAvatar());
+        user.setNickname(infoDTO.getUserName());
+        user.setBirthday(infoDTO.getBirthday());
+        user.setSex(SexEnum.of(infoDTO.getSex()));
+        user.setProfession(infoDTO.getOccupation());
+        user.setSchool(infoDTO.getSchool());
+        user.setAvatar(avatarURL);
+        user.setBio(infoDTO.getBio());
+        List<String> interestModules = infoDTO.getInterestModules();
+        List<UserForumRelations> userForumRelationsList = new ArrayList<>();
+        for (String interestModule : interestModules) {
+            Forums forums = forumsMapper.selectOne(new LambdaQueryWrapper<Forums>().eq(Forums::getName, interestModule));
+            if (forums == null) {
+                throw new BadRequestException(BadRequestConstant.FORUM_NOT_EXIST);
+            }
+            userForumRelationsList.add(new UserForumRelations().setUserId(userId).setForumId(forums.getId()).setRelationType(RelationEnum.NORMAL));
+        }
+        userForumRelationsService.saveBatch(userForumRelationsList);
+        updateById(user);
+        return R.ok(null);
     }
 }
 

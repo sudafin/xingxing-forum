@@ -1,10 +1,13 @@
 package com.xingxingforum.service;
 
 import com.xingxingforum.entity.R;
+import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xingxingforum.entity.model.Users;
+
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -21,4 +24,6 @@ public interface IUsersService extends IService<Users> {
     R<Object> login(LoginFormDTO loginFormDTO);
 
     R<String> refreshToken(String refreshToken);
+
+    R<Object> info(@Valid InfoDTO infoDTO);
 }

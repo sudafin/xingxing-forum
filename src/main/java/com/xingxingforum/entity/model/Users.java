@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.xingxingforum.enums.SexEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -64,7 +68,7 @@ public class Users implements Serializable {
 
     @ApiModelProperty(value = "性别")
     @TableField("sex")
-    private Integer sex;
+    private SexEnum sex;
 
     @ApiModelProperty(value = "ip地址")
     @TableField("ip_address")
@@ -80,7 +84,7 @@ public class Users implements Serializable {
 
     @ApiModelProperty(value = "生日")
     @TableField("birthday")
-    private LocalDateTime birthday;
+    private LocalDate birthday;
 
     @ApiModelProperty(value = "职业")
     @TableField("profession")

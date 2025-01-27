@@ -4,8 +4,15 @@ import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
+import com.qiniu.util.Auth;
+import com.xingxingforum.config.FileURLConfig;
+import com.xingxingforum.config.properties.OssProperties;
+import com.xingxingforum.entity.model.UserForumRelations;
+import com.xingxingforum.enums.RelationEnum;
+import com.xingxingforum.mapper.UserForumRelationsMapper;
 import com.xingxingforum.utils.RSAUtils;
 import com.xingxingforum.utils.SearchIPUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.xmlbeans.impl.tool.CodeGenUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +29,10 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.time.Duration;
 
+import static com.xingxingforum.constants.Constant.JWT_REFRESH_TTL;
+
 @SpringBootTest
+@Slf4j
 class XingxingForumApplicationTests {
     @Resource
     private JavaMailSenderImpl mailSender;
@@ -30,6 +40,15 @@ class XingxingForumApplicationTests {
     private RedisTemplate<String,String> redisTemplate;
     @Value("${spring.mail.username}")
     private String from;
+
+    @Resource
+    private OssProperties ossProperties;
+
+    @Resource
+    private UserForumRelationsMapper userForumRelationsMapper;
+
+    @Resource
+    private FileURLConfig fileURLConfig;
 
     @Test
     void contextLoads() {
@@ -136,4 +155,32 @@ class XingxingForumApplicationTests {
     void testIp() throws IOException {
         System.out.println(SearchIPUtils.getIP("220.181.108.157"));
     }
+
+    @Test
+    void test_oss(){
+        Auth auth = Auth.create(ossProperties.getAccessKey(), ossProperties.getSecretKey());
+        String token = auth.uploadToken(ossProperties.getBucket());
+        System.out.println(token);
+    }
+
+    @Test
+    void test_user_forum_relations(){
+        UserForumRelations userForumRelations = new UserForumRelations();
+        userForumRelations.setRelationType(RelationEnum.NORMAL);
+        userForumRelations.setUserId(1L);
+        userForumRelations.setForumId(1L);
+        userForumRelationsMapper.insert(userForumRelations);
+    }
+
+    @Test
+    void test_avatar_url(){
+        String avatar = fileURLConfig.uploadFile("FjD4IK_gdSW_5LSh03scRBdxwFgC");
+        log.debug("avatar:{}",avatar);
+    }
+
+    public static void main(String[] args) {
+        Duration ttl = JWT_REFRESH_TTL;
+        System.out.println(ttl.toMillis());
+    }
+
 }

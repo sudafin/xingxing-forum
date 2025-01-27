@@ -17,7 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.util.Date;
 
@@ -34,8 +38,15 @@ public class JwtUtils {
 
 
     public JwtUtils(StringRedisTemplate stringRedisTemplate) {
-        KeyPair keyPair = RSAUtils.generateKeyPair();
-        this.jwtSigner = JWTSignerUtil.hs256(RSAUtils.getPrivateKey(keyPair).getBytes());
+        String privateKeyPath = "src/main/resources/private_key.pem";
+        String privateKeyStr = null;
+        try {
+            privateKeyStr = FileUtils.readPrivateKeyFile(privateKeyPath);
+            PrivateKey privateKey = RSAUtils.getPrivateKey(privateKeyStr);
+            this.jwtSigner = JWTSignerUtil.hs256(privateKey.getEncoded());
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
         this.stringRedisTemplate = stringRedisTemplate;
     }
     /**
