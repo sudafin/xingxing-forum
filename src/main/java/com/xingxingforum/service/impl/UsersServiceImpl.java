@@ -11,27 +11,22 @@ import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.xingxingforum.entity.dto.users.UserDTO;
-import com.xingxingforum.entity.model.Forums;
-import com.xingxingforum.entity.model.UserForumRelations;
-import com.xingxingforum.entity.model.Users;
+import com.xingxingforum.entity.model.*;
 import com.xingxingforum.entity.vo.LoginVO;
+import com.xingxingforum.entity.vo.UserInfoVO;
 import com.xingxingforum.enums.RelationEnum;
 import com.xingxingforum.enums.SexEnum;
 import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.expcetions.DbException;
 import com.xingxingforum.expcetions.UnauthorizedException;
-import com.xingxingforum.mapper.FollowsMapper;
-import com.xingxingforum.mapper.ForumsMapper;
-import com.xingxingforum.mapper.UserForumRelationsMapper;
-import com.xingxingforum.mapper.UsersMapper;
+import com.xingxingforum.mapper.*;
 import com.xingxingforum.service.IUserForumRelationsService;
 import com.xingxingforum.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xingxingforum.utils.CollUtils;
+import com.xingxingforum.utils.BeanUtils;
 import com.xingxingforum.utils.JwtUtils;
 import com.xingxingforum.utils.UserContextUtils;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +56,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private IUserForumRelationsService userForumRelationsService;
     @Resource
     private ForumsMapper forumsMapper;
+    @Resource
+    private LikesMapper likesMapper;
     @Resource
     private FileURLConfig fileURLConfig;
     @Override
@@ -93,24 +90,22 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         if(!passwordEncoder.matches(loginFormDTO.getPassword(), user.getPassword())){
             return R.error(BadRequestConstant.USER_ACCOUNT_PASSWORD_ERROR);
         }
+        //生成token
         String accessToken;
         String refreshToken;
-        UserDTO userDTO = UserDTO.builder().
-                id(user.getId()).
-                nickName(user.getNickname()).
-                email(user.getEmail()).
-                avatar(user.getAvatar()).
-                bio(user.getBio()).
-                isAdmin(user.getIsAdmin()).
-                isActive(user.getIsActive()).
-                sex(user.getSex()).
-                ipAddress(user.getIpAddress()).
-                address(user.getAddress()).
-                birthday(user.getBirthday()).
-                profession(user.getProfession()).
-                school(user.getSchool()).
-                Level(user.getLevel()).
-                build();
+        //获取粉丝数和关注数
+        Long fansCount = followsMapper.selectCount(new LambdaQueryWrapper<Follows>().eq(Follows::getFollowedId, user.getId()));
+        Long followCount = followsMapper.selectCount(new LambdaQueryWrapper<Follows>().eq(Follows::getFollowerId, user.getId()));
+        //获取被点赞的数量
+        Long likeCount = likesMapper.selectCount(new LambdaQueryWrapper<Likes>().eq(Likes::getUserId, user.getId()));
+        //封装用户信息
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        //封装返回用户信息
+        UserInfoVO userInfoVO = BeanUtils.copyBean(user, UserInfoVO.class);
+        userInfoVO.setFansCount(fansCount);
+        userInfoVO.setFollowCount(followCount);
+        userInfoVO.setLikeCount(likeCount);
         try {
             //生成token
             accessToken = jwtUtils.createToken(userDTO);
@@ -119,7 +114,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             log.error("生成token失败", e);
             throw new UnauthorizedException(BadRequestConstant.TOKEN_GENERATE_FAILED);
         }
-        return R.ok(LoginVO.builder().userDTO(userDTO).token(accessToken).refreshToken(refreshToken).build());
+        return R.ok(LoginVO.builder().userInfo(userInfoVO).token(accessToken).refreshToken(refreshToken).build());
     }
 
     @Override
@@ -133,7 +128,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     @Override
-    public R<Object> info(@Valid InfoDTO infoDTO) {
+    public R<Object> registerInfo(@Valid InfoDTO infoDTO) {
         Long userId = UserContextUtils.getUser();
         Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getId, userId));
         if (user == null) {
@@ -159,6 +154,37 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         userForumRelationsService.saveBatch(userForumRelationsList);
         updateById(user);
         return R.ok(null);
+    }
+
+    @Override
+    public R<UserInfoVO> getUserInfo(Long id) {
+        Users user = getById(id);
+        if(user == null){
+            throw new BadRequestException(BadRequestConstant.User_NOT_EXIST);
+        }
+        Long userId = UserContextUtils.getUser();
+        UserInfoVO userInfoVO = new UserInfoVO();
+        //获取粉丝数和关注数
+        Long fansCount = followsMapper.selectCount(new LambdaQueryWrapper<Follows>().eq(Follows::getFollowedId, user.getId()));
+        Long followCount = followsMapper.selectCount(new LambdaQueryWrapper<Follows>().eq(Follows::getFollowerId, user.getId()));
+        //获取被点赞的数量
+        Long likeCount = likesMapper.selectCount(new LambdaQueryWrapper<Likes>().eq(Likes::getUserId, user.getId()));
+        userInfoVO.setFollowCount(followCount);
+        userInfoVO.setLikeCount(likeCount);
+        userInfoVO.setFansCount(fansCount);
+        //如果查询的用户是当前用户，则返回所有信息
+        if (userId.equals(id)) {
+            userInfoVO = BeanUtils.copyBean(user, UserInfoVO.class);
+            return R.ok(userInfoVO);
+        }
+        //如果是查询其他用户则返回少部分信息
+        userInfoVO.setId(user.getId());
+        userInfoVO.setIpAddress(user.getIpAddress());
+        userInfoVO.setBio(userInfoVO.getBio());
+        userInfoVO.setNickname(user.getNickname());
+        userInfoVO.setAvatar(user.getAvatar());
+        userInfoVO.setSex(user.getSex());
+        return R.ok(userInfoVO);
     }
 }
 
