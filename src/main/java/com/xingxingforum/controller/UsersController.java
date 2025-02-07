@@ -6,6 +6,8 @@ import com.xingxingforum.config.properties.OssProperties;
 import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
+import com.xingxingforum.entity.dto.users.UserDTO;
+import com.xingxingforum.entity.vo.UserInfoVO;
 import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
@@ -75,6 +77,11 @@ public class UsersController {
         return R.ok(("验证码发送成功！"));
     }
 
+    /**
+     *
+     * @param registerMailDTO 注册信息
+     * @return 返回R
+     */
     @ApiOperation(value = "用户注册")
     @PostMapping(value = "token/register")
     public R<Object> login(@RequestBody @Valid RegisterMailDTO registerMailDTO) {
@@ -99,6 +106,7 @@ public class UsersController {
         return usersService.login(loginFormDTO);
     }
 
+
     /**
      *
      * @param refreshToken 刷新token
@@ -112,6 +120,11 @@ public class UsersController {
         }
         return usersService.refreshToken(refreshToken);
     }
+
+    /**
+     *
+     * @return 返回七牛云的使用token
+     */
 
     @ApiOperation("获取oss的token")
     @GetMapping(value = "token/oss")
@@ -131,7 +144,19 @@ public class UsersController {
      */
     @ApiOperation("初次填写信息")
     @PostMapping(value = "info")
-    public R<Object> info(@RequestBody @Valid InfoDTO infoDTO) {
-        return usersService.info(infoDTO);
+    public R<Object> registerInfo(@RequestBody @Valid InfoDTO infoDTO) {
+        return usersService.registerInfo(infoDTO);
+    }
+
+
+    /**
+     *
+     * @param id 用户id
+     * @return 返回用户信息
+     */
+    @ApiOperation("获取用户信息")
+    @GetMapping(value = "info/{id}")
+    public R<UserInfoVO> getUserInfo(@PathVariable Long id) {
+        return usersService.getUserInfo(id);
     }
 }

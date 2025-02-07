@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoDevCoderSettings">
+    <option name="customEngineRequestBodyFormatParam" value="{ &quot;customFields&quot;: {&quot;model&quot;: &quot;deepseek-reasoner&quot;, &quot;temperature&quot;: 0.0, &quot;stream&quot;: true} }" />
+    <option name="customEngineResponseFormatParam" value="$.choices[0].delta.content" />
+    <option name="customEngineServerParam" value="https://api.deepseek.com/v1/chat/completions" />
+    <option name="customEngineTokenParam" value="sk-d20a83347eb2448688d73416be9a9fce" />
+    <option name="enableRenameSuggestion" value="true" />
+    <option name="inEditorCompletion" value="true" />
+    <option name="recordingInLocal" value="true" />
+    <option name="useCustomAIEngineWhenInlayCodeComplete" value="true" />
+  </component>
+</project>
