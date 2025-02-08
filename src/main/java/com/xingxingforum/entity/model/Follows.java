@@ -32,11 +32,11 @@ public class Follows implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "关注者粉丝ID")
+    @ApiModelProperty(value = "关注者ID")
     @TableField("follower_id")
     private Long followerId;
 
-    @ApiModelProperty(value = "被关注者博主ID")
+    @ApiModelProperty(value = "被关注者ID")
     @TableField("followed_id")
     private Long followedId;
 

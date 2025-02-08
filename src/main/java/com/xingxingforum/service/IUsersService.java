@@ -6,7 +6,6 @@ import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xingxingforum.entity.model.Users;
-import com.xingxingforum.entity.vo.UserInfoVO;
 
 import javax.validation.Valid;
 
@@ -26,7 +25,5 @@ public interface IUsersService extends IService<Users> {
 
     R<String> refreshToken(String refreshToken);
 
-    R<Object> registerInfo(@Valid InfoDTO infoDTO);
-
-    R<UserInfoVO> getUserInfo(Long id);
+    R<Object> info(@Valid InfoDTO infoDTO);
 }
