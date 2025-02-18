@@ -1,11 +1,14 @@
 package com.xingxingforum.controller;
 
 import com.qiniu.util.Auth;
+import com.xingxingforum.aop.ElementRecord;
 import com.xingxingforum.config.MailConfig;
 import com.xingxingforum.config.properties.OssProperties;
 import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
+import com.xingxingforum.entity.dto.users.UserDTO;
+import com.xingxingforum.entity.vo.UserInfoVO;
 import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
@@ -129,6 +132,14 @@ public class UsersController {
         return R.ok(ossToken);
     }
 
+    @ApiOperation("测试")
+    @PostMapping(value = "token/test")
+    @ElementRecord
+    public R<Object> test(@RequestBody @Valid UserDTO userDTO) {
+        log.info("测试：{}", userDTO.getId());
+        return R.ok(userDTO.getId());
+    }
+
     /**
      *
      * @param infoDTO 用户信息
@@ -136,7 +147,19 @@ public class UsersController {
      */
     @ApiOperation("初次填写信息")
     @PostMapping(value = "info")
-    public R<Object> info(@RequestBody @Valid InfoDTO infoDTO) {
-        return usersService.info(infoDTO);
+    public R<Object> registerInfo(@RequestBody @Valid InfoDTO infoDTO) {
+        return usersService.registerInfo(infoDTO);
+    }
+
+
+    /**
+     *
+     * @param id 用户id
+     * @return 返回用户信息
+     */
+    @ApiOperation("获取用户信息")
+    @GetMapping(value = "info/{id}")
+    public R<UserInfoVO> getUserInfo(@PathVariable Long id) {
+        return usersService.getUserInfo(id);
     }
 }

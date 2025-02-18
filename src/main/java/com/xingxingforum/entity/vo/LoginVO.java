@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Builder
 public class LoginVO implements Serializable {
     private static final long serialVersionUID = -3124612657759050173L;
-    private UserDTO userDTO;
+    private UserInfoVO userInfo;
     private String token;
     private String refreshToken;
     private Boolean isFirstLogin;
