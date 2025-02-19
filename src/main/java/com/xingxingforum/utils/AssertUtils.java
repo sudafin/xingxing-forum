@@ -1,7 +1,7 @@
 package com.xingxingforum.utils;
 
 
-import com.xingxingforum.constants.ErrorInfo;
+import com.xingxingforum.constants.ErrorInfoConstant;
 import com.xingxingforum.expcetions.BadRequestException;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -45,7 +45,7 @@ public class AssertUtils {
     }
 
     private static void handleException(String ... message){
-        String msg = ErrorInfo.Msg.REQUEST_PARAM_ILLEGAL;
+        String msg = ErrorInfoConstant.Msg.REQUEST_PARAM_ILLEGAL;
         if(message != null && message.length > 0){
             msg = message[0];
         }

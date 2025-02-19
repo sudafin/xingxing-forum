@@ -6,9 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.slf4j.MDC;
 
-import static com.xingxingforum.constants.ErrorInfo.Code.FAILED;
-import static com.xingxingforum.constants.ErrorInfo.Code.SUCCESS;
-import static com.xingxingforum.constants.ErrorInfo.Msg.OK;
+import static com.xingxingforum.constants.ErrorInfoConstant.Code.FAILED;
+import static com.xingxingforum.constants.ErrorInfoConstant.Code.SUCCESS;
+import static com.xingxingforum.constants.ErrorInfoConstant.Msg.OK;
 
 
 @Data

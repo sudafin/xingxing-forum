@@ -1,6 +1,5 @@
 package com.xingxingforum;
 
-import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
@@ -13,7 +12,6 @@ import com.xingxingforum.mapper.UserForumRelationsMapper;
 import com.xingxingforum.utils.RSAUtils;
 import com.xingxingforum.utils.SearchIPUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xmlbeans.impl.tool.CodeGenUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +27,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.time.Duration;
 
-import static com.xingxingforum.constants.Constant.JWT_REFRESH_TTL;
+import static com.xingxingforum.constants.TimeConstant.JWT_REFRESH_TTL;
 
 @SpringBootTest
 @Slf4j
@@ -166,7 +164,7 @@ class XingxingForumApplicationTests {
     @Test
     void test_user_forum_relations(){
         UserForumRelations userForumRelations = new UserForumRelations();
-        userForumRelations.setRelationType(RelationEnum.NORMAL);
+        userForumRelations.setRelationType(RelationEnum.Follow);
         userForumRelations.setUserId(1L);
         userForumRelations.setForumId(1L);
         userForumRelationsMapper.insert(userForumRelations);

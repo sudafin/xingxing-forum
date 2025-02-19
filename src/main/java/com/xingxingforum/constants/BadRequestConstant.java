@@ -18,4 +18,7 @@ public interface BadRequestConstant {
     String REQUEST_ID_HEADER = "X-Request-ID";
     String User_NOT_EXIST = "用户不存在";
     String FORUM_NOT_EXIST =  "版块不存在";
+    String PARENT_FORUM_NOT_EXIST = "父模板不存在";
+    String FORUM__FAVORITE_CONFLICT = "喜爱操作发生冲突";
+    String THREAD_NOT_EXIST = "帖子不存在";
 }

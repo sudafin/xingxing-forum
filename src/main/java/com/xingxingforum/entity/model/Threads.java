@@ -29,7 +29,7 @@ public class Threads implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @ApiModelProperty(value = "论坛ID")
@@ -39,6 +39,10 @@ public class Threads implements Serializable {
     @ApiModelProperty(value = "用户ID")
     @TableField("user_id")
     private Long userId;
+
+    @ApiModelProperty(value = "帖子信息id")
+    @TableField("thread_detail_id")
+    private Long thread_detail_id;
 
     @ApiModelProperty(value = "帖子主题")
     @TableField("subject")
@@ -50,23 +54,21 @@ public class Threads implements Serializable {
     @TableField("images")
     private String images;
 
-    @TableField("replies")
-    private Integer replies;
+    @ApiModelProperty(value = "是否锁定")
+    @TableField("is_locked")
+    private Boolean isLocked;
 
-    @TableField("views")
-    private Integer views;
+    @ApiModelProperty(value = "是否删除")
+    @TableField("is_deleted")
+    private Boolean isDeleted;
 
-    @TableField("likes")
-    private Integer likes;
-
+    @ApiModelProperty(value = "是否置顶")
     @TableField("is_top")
     private Boolean isTop;
 
+    @ApiModelProperty(value = "是否精华")
     @TableField("is_essence")
     private Boolean isEssence;
-
-    @TableField("is_locked")
-    private Boolean isLocked;
 
     @TableField("created_at")
     private LocalDateTime createdAt;

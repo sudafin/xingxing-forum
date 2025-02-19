@@ -1,6 +1,5 @@
-package com.xingxingforum.entity.vo;
+package com.xingxingforum.entity.vo.forums;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

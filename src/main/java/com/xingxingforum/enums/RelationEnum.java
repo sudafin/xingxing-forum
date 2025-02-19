@@ -9,7 +9,8 @@ import java.util.Objects;
 
 @Getter
 public enum RelationEnum implements BaseEnum {
-    NORMAL(1, "普通关注"),
+    UNFOLLOW(0, "未关注"),
+    FOLLOWER(1, "关注"),
     MODERATOR(2, "版主"),
     ;
     @EnumValue

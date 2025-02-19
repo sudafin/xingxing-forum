@@ -1,4 +1,4 @@
-package com.xingxingforum.entity.vo;
+package com.xingxingforum.entity.vo.forums;
 
 import lombok.Data;
 

@@ -1,12 +1,13 @@
 package com.xingxingforum.constants;
 
-public interface ErrorInfo {
+public interface ErrorInfoConstant {
 
     interface Msg {
         String OK = "OK";
        String INVALID_VERIFY_CODE = "验证码错误";
 
         String SERVER_INTER_ERROR = "服务器内部错误";
+        String CLIENT_ERROR = "客户端错误";
         String DB_SORT_FIELD_NOT_FOUND = "排序字段不存在";
         String OPERATE_FAILED = "操作失败";
 
@@ -19,6 +20,7 @@ public interface ErrorInfo {
         String INVALID_TOKEN = "无效的token";
         String EXPIRED_TOKEN = "token已过期";
         String INVALID_TOKEN_PAYLOAD = "token参数格式错误";
+        String DATA_FIELD_NAME_CREATE_TIME = "createTime";
     }
 
     interface Code {

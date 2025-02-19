@@ -12,8 +12,8 @@ import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.entity.model.*;
-import com.xingxingforum.entity.vo.LoginVO;
-import com.xingxingforum.entity.vo.UserInfoVO;
+import com.xingxingforum.entity.vo.users.LoginVO;
+import com.xingxingforum.entity.vo.users.UserInfoVO;
 import com.xingxingforum.enums.RelationEnum;
 import com.xingxingforum.enums.SexEnum;
 import com.xingxingforum.expcetions.BadRequestException;
@@ -156,7 +156,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             if (forums == null) {
                 throw new BadRequestException(BadRequestConstant.FORUM_NOT_EXIST);
             }
-            userForumRelationsList.add(new UserForumRelations().setUserId(userId).setForumId(forums.getId()).setRelationType(RelationEnum.NORMAL));
+            userForumRelationsList.add(new UserForumRelations().setUserId(userId).setForumId(forums.getId()).setRelationType(RelationEnum.FOLLOWER));
         }
         userForumRelationsService.saveBatch(userForumRelationsList);
         updateById(user);

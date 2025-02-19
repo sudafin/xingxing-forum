@@ -1,14 +1,14 @@
 package com.xingxingforum.controller;
 
 import com.qiniu.util.Auth;
-import com.xingxingforum.aop.ElementRecord;
 import com.xingxingforum.config.MailConfig;
 import com.xingxingforum.config.properties.OssProperties;
+import com.xingxingforum.constants.BadRequestConstant;
+import com.xingxingforum.constants.ErrorInfoConstant;
 import com.xingxingforum.entity.dto.users.InfoDTO;
 import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
-import com.xingxingforum.entity.dto.users.UserDTO;
-import com.xingxingforum.entity.vo.UserInfoVO;
+import com.xingxingforum.entity.vo.users.UserInfoVO;
 import com.xingxingforum.expcetions.BadRequestException;
 import com.xingxingforum.service.IUsersService;
 import com.xingxingforum.utils.StringUtils;
@@ -116,7 +116,8 @@ public class UsersController {
     @GetMapping(value = "token/refresh")
     public R<String> refreshToken(@RequestParam String refreshToken) {
         if(refreshToken == null){
-            throw new BadRequestException("登录超时");
+            log.error(BadRequestConstant.INVALID_TOKEN);
+            throw new BadRequestException(ErrorInfoConstant.Msg.INVALID_TOKEN);
         }
         return usersService.refreshToken(refreshToken);
     }
@@ -132,13 +133,6 @@ public class UsersController {
         return R.ok(ossToken);
     }
 
-    @ApiOperation("测试")
-    @PostMapping(value = "token/test")
-    @ElementRecord
-    public R<Object> test(@RequestBody @Valid UserDTO userDTO) {
-        log.info("测试：{}", userDTO.getId());
-        return R.ok(userDTO.getId());
-    }
 
     /**
      *

@@ -6,7 +6,7 @@ import com.xingxingforum.entity.dto.users.LoginFormDTO;
 import com.xingxingforum.entity.dto.users.RegisterMailDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xingxingforum.entity.model.Users;
-import com.xingxingforum.entity.vo.UserInfoVO;
+import com.xingxingforum.entity.vo.users.UserInfoVO;
 
 import javax.validation.Valid;
 

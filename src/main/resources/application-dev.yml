@@ -2,13 +2,7 @@
 server: # 允许外部访问监听所有ip
   address: 0.0.0.0
   port: 8080
-
-#spring配置
 spring:
-  #    开发环境
-  profiles:
-    active: dev
-#  mvc配置
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -45,8 +39,6 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   #mybatis-plus配置
-
-#  mybatis-plus配置
 mybatis-plus:
   mapper-locations: classpath:/mapper/*.xml
   type-aliases-package: com.xingxingforum.entity
@@ -70,8 +62,8 @@ logging:
 #jwt配置
 jwt:
   token:
-#    expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
-    expirationTime: 3600000
+    #    expirationTime: 3600000 # 以毫秒为单位，例如1分钟=60000毫秒
+    expirationTime: 360000000
 
 #过滤器不拦截的路径,拦截器路径在MangerWebConfig中设置
 xf:
@@ -88,7 +80,7 @@ xf:
     - /error
     - /test/**
 
-#swagger的配置信息
+  #swagger的配置信息
   swagger:
     enable: true
     enableResponseWrap: true

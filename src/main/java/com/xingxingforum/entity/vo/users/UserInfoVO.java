@@ -1,9 +1,7 @@
-package com.xingxingforum.entity.vo;
+package com.xingxingforum.entity.vo.users;
 
-import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.enums.SexEnum;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 

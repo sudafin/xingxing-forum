@@ -9,7 +9,7 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.JWTValidator;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import com.xingxingforum.constants.ErrorInfo;
+import com.xingxingforum.constants.ErrorInfoConstant;
 import com.xingxingforum.constants.RedisConstant;
 import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.expcetions.BadRequestException;
@@ -18,14 +18,13 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.util.Date;
 
-import static com.xingxingforum.constants.Constant.JWT_REFRESH_TTL;
+import static com.xingxingforum.constants.TimeConstant.JWT_REFRESH_TTL;
 
 @Component
 public class JwtUtils {
@@ -125,31 +124,31 @@ public class JwtUtils {
      */
     public UserDTO parseRefreshToken(String refreshToken) {
         // 1.校验token是否为空
-        AssertUtils.isNotNull(refreshToken, ErrorInfo.Msg.INVALID_TOKEN);
+        AssertUtils.isNotNull(refreshToken, ErrorInfoConstant.Msg.INVALID_TOKEN);
         // 2.校验并解析jwt
         JWT jwt;
         try {
             jwt = JWT.of(refreshToken).setSigner(jwtSigner);
         } catch (Exception e) {
-            throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN, e);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.INVALID_TOKEN, e);
         }
         // 2.校验jwt是否有效
         if (!jwt.verify()) {
             // 验证失败
-            throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.INVALID_TOKEN);
         }
         // 3.校验是否过期
         try {
             JWTValidator.of(jwt).validateDate();
         } catch (ValidateException e) {
-            throw new BadRequestException(400, ErrorInfo.Msg.EXPIRED_TOKEN);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.EXPIRED_TOKEN);
         }
         // 4.数据格式校验
         Object payload = jwt.getPayload("payload");
         Object jtiPayload = jwt.getPayload(RedisConstant.PAYLOAD_JTI_KEY);
         if (jtiPayload == null || payload == null) {
             // 数据为空
-            throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.INVALID_TOKEN);
         }
 
         // 5.数据解析
@@ -158,14 +157,14 @@ public class JwtUtils {
             userDTO = ((JSONObject) payload).toBean(UserDTO.class);
         } catch (RuntimeException e) {
             // 数据格式有误
-            throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.INVALID_TOKEN);
         }
 
         // 6.JTI校验
         String jti = stringRedisTemplate.opsForValue().get(RedisConstant.JWT_REDIS_KEY_PREFIX + userDTO.getId());
         if (!StringUtils.equals(jti, jtiPayload.toString())) {
             // jti不一致
-            throw new BadRequestException(400, ErrorInfo.Msg.INVALID_TOKEN);
+            throw new BadRequestException(400, ErrorInfoConstant.Msg.INVALID_TOKEN);
         }
         return userDTO;
     }

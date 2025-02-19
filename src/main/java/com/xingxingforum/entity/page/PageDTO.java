@@ -1,4 +1,4 @@
-package com.xingxingforum.entity;
+package com.xingxingforum.entity.page;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
