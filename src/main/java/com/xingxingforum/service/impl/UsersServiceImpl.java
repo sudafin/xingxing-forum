@@ -139,7 +139,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         Long userId = UserContextUtils.getUser();
         Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getId, userId));
         if (user == null) {
-            return R.error(BadRequestConstant.User_NOT_EXIST);
+            return R.error(BadRequestConstant.USER_NOT_EXIST);
         }
         String avatarURL = fileURLConfig.uploadFile(infoDTO.getAvatar());
         user.setNickname(infoDTO.getUserName());
@@ -167,7 +167,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     public R<UserInfoVO> getUserInfo(Long id) {
         Users user = getById(id);
         if(user == null){
-            throw new BadRequestException(BadRequestConstant.User_NOT_EXIST);
+            throw new BadRequestException(BadRequestConstant.USER_NOT_EXIST);
         }
         Long userId = UserContextUtils.getUser();
         UserInfoVO userInfoVO = new UserInfoVO();

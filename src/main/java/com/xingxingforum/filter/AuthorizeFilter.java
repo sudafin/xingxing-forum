@@ -8,6 +8,7 @@ import com.xingxingforum.config.properties.AuthProperties;
 import com.xingxingforum.entity.dto.users.UserDTO;
 import com.xingxingforum.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -32,11 +33,11 @@ public class AuthorizeFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,  HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain)
             throws ServletException, IOException {
-        HttpServletRequest requestWrapper = new CxmHttpServletRequestWrapper((HttpServletRequest) request);
+        HttpServletRequest requestWrapper = new CxmHttpServletRequestWrapper(request);
         // 获取请求路径
-        String path  = request.getRequestURI();
+        String path  = requestWrapper.getRequestURI();
 //        log.info("RemoteHost{} RemoveAddr{}",requestWrapper.getRemoteHost() , requestWrapper.getRemoteAddr());
         // 查看请求路径是否在这个白名单中
         if (isExclude(path)) {

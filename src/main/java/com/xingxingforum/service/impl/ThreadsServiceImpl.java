@@ -2,16 +2,14 @@ package com.xingxingforum.service.impl;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xingxingforum.constants.BadRequestConstant;
 import com.xingxingforum.constants.ErrorInfoConstant;
 import com.xingxingforum.constants.RedisConstant;
 import com.xingxingforum.entity.R;
 import com.xingxingforum.entity.dto.threads.ThreadQueryDTO;
-import com.xingxingforum.entity.model.Forums;
-import com.xingxingforum.entity.model.ThreadDetail;
-import com.xingxingforum.entity.model.Threads;
-import com.xingxingforum.entity.model.Users;
+import com.xingxingforum.entity.model.*;
 import com.xingxingforum.entity.page.PageDTO;
 import com.xingxingforum.entity.vo.threads.ThreadListVO;
 import com.xingxingforum.expcetions.BadRequestException;
@@ -19,13 +17,16 @@ import com.xingxingforum.mapper.*;
 import com.xingxingforum.service.IThreadDetailService;
 import com.xingxingforum.service.IThreadsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xingxingforum.service.IUserPrivacyService;
 import com.xingxingforum.utils.ObjectUtils;
 import com.xingxingforum.utils.StringUtils;
 import com.xingxingforum.utils.UserContextUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
  * @since 2025-01-22
  */
 @Service
+@Slf4j
 public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> implements IThreadsService {
     @Resource
     private IThreadDetailService threadDetailService;
@@ -49,6 +51,8 @@ public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> impl
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private FavoritesMapper favoritesMapper;
+    @Resource
+    private IUserPrivacyService userPrivacyService;
 
     //热度 = (likes × 0.5) + (replies × 0.3) + (views × 0.2)
 
@@ -62,6 +66,7 @@ public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> impl
     public R<PageDTO<ThreadListVO>> threadsPage(ThreadQueryDTO threadQueryDTO) {
         Page<Threads> threadsQueryPage = new Page<>(threadQueryDTO.getPageNo(), threadQueryDTO.getPageSize());
         Page<ThreadDetail> threadDetailQueryPage = new Page<>(threadQueryDTO.getPageNo(), threadQueryDTO.getPageSize());
+        Page<Favorites> threadsFavoriteQueryPage = new Page<>(threadQueryDTO.getPageNo(), threadQueryDTO.getPageSize());
         List<ThreadListVO> threadListVOList;
         //1. 检查是否是主页获取热度列表
         if (ObjectUtils.isNotEmpty(threadQueryDTO.getIsHot())) {
@@ -69,7 +74,7 @@ public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> impl
             //先查看缓存是否有数据
             String hotThreads = stringRedisTemplate.opsForValue().get(hotThreadsKey);
             if (StringUtils.isNotEmpty(hotThreads)) {
-                PageDTO<ThreadListVO> threadListVOPageDTO  = JSONUtil.toBean(hotThreads, new TypeReference<>() {
+                PageDTO<ThreadListVO> threadListVOPageDTO = JSONUtil.toBean(hotThreads, new TypeReference<>() {
                 }, false);
                 return R.ok(threadListVOPageDTO);
             }
@@ -86,32 +91,63 @@ public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> impl
 
         //2. 检查是否是用户发的或者是其他用户发的帖子列表,并判断用户点的是自己的贴子还是收藏的帖子
         if (ObjectUtils.isNotEmpty(threadQueryDTO.getUserId())) {
-            //处理点击收藏的列表
-            if (threadQueryDTO.getIsFavorite()) {
-
+            //2.1 查看查询是否为本人或者其他人
+            boolean isMe = threadQueryDTO.getUserId().equals(UserContextUtils.getUser());
+            UserPrivacy userPrivacy = null;
+            //2.2 获取访问用户的隐私设置
+            if (!isMe) {
+                userPrivacy = userPrivacyService.getOne(new LambdaQueryWrapper<UserPrivacy>().eq(UserPrivacy::getUserId, threadQueryDTO.getUserId()));
+                if (ObjectUtils.isEmpty(userPrivacy)) {
+                    log.error(BadRequestConstant.USER_PRIVACY_NOT_EXIST);
+                    throw new BadRequestException(ErrorInfoConstant.Msg.CLIENT_ERROR);
+                }
             }
+            //2.3 处理点击收藏的列表
+            if (ObjectUtils.isNotEmpty(threadQueryDTO.getIsFavorite()) &&threadQueryDTO.getIsFavorite()) {
+                Page<Favorites> favoritesPage = favoritesMapper.selectPage(threadsFavoriteQueryPage, new LambdaQueryWrapper<Favorites>().eq(Favorites::getUserId, threadQueryDTO.getUserId()));
+                List<Long> threadIdList = favoritesPage.getRecords().stream().map(Favorites::getThreadId).collect(Collectors.toList());
+                List<ThreadDetail> threadDetailList = threadDetailService.lambdaQuery().in(ThreadDetail::getId, threadIdList).list();
+                if (favoritesPage.getTotal() == 0) {
+                    return R.ok(PageDTO.empty(favoritesPage));
+                }
+                //如果是查询本人的收藏列表,不用处理了是否设置私密
+                if (!isMe) {
+                    if (userPrivacy.getShowFavorite()) {
+                        R.error(ErrorInfoConstant.Code.USER_PROFILE_PRIVATE, "访问的用户开启了隐私设置,无法查看该用户的页面");
+                    }
+                    threadDetailList = threadDetailList.stream().filter(threadDetail -> !threadDetail.getIsHidden()).collect(Collectors.toList());
+                }
+                threadListVOList = threadDetailConvertThreadListVO(threadDetailList);
+                return R.ok(PageDTO.of(favoritesPage, threadListVOList));
+            }
+
+            //2.4 处理点击自发贴的列子
             Page<Threads> threadsPage = lambdaQuery().eq(Threads::getUserId, threadQueryDTO.getUserId()).orderByDesc(Threads::getCreatedAt).page(threadsQueryPage);
             if (threadsPage.getTotal() == 0) {
                 return R.ok(PageDTO.empty(threadsPage));
             }
-            //检查是否当前用户,如果是当前用户就要把当前隐藏的帖子也显示出来, 如果不是当前用户也就是别的用户需要隐藏帖子过滤
-            boolean isMe = threadQueryDTO.getUserId().equals(UserContextUtils.getUser());
-            List<Long> threadDetailIdList = threadsQueryPage.getRecords().stream().map(Threads::getThreadDetailId).collect(Collectors.toList());
+            //拿到帖子的详情id
+            List<Long> threadDetailIdList = threadsPage.getRecords().stream().map(Threads::getThreadDetailId).collect(Collectors.toList());
             List<ThreadDetail> threadDetailList = threadDetailService.lambdaQuery().in(ThreadDetail::getId, threadDetailIdList).list();
-            if (!isMe) {
-                //只有isHidden为false留下来
-                threadDetailList = threadDetailList.stream().filter(threadDetail -> !threadDetail.getIsHidden()).collect(Collectors.toList());
-            }
             if (threadDetailList.isEmpty()) {
                 return R.ok(PageDTO.empty(threadsPage));
+            }
+            if (!isMe) {
+                //如果开启隐私直接返回错误代码
+                if (!userPrivacy.getShowThread()) {
+                    return R.error(ErrorInfoConstant.Code.USER_PROFILE_PRIVATE, "访问的用户开启了隐私设置,无法查看该用户的页面");
+                }
+                //如果没有设置就要将可能隐藏的帖子过滤出来,就是把isHidden为false然后取反留下来
+                threadDetailList = threadDetailList.stream().filter(threadDetail -> !threadDetail.getIsHidden()).collect(Collectors.toList());
             }
             threadListVOList = threadDetailConvertThreadListVO(threadDetailList);
             return R.ok(PageDTO.of(threadsPage, threadListVOList));
         }
-        // 3.其他情况就是是板块的列表
+
+        // 3.查询板块的列表
         if (ObjectUtils.isEmpty(threadQueryDTO.getForumId())) {
             log.error(BadRequestConstant.FORUM_NOT_EXIST);
-            throw new BadRequestException(ErrorInfoConstant.Msg.CLIENT_ERROR);
+            throw new BadRequestException(ErrorInfoConstant.Msg.SERVER_INTER_ERROR);
         }
 
         return R.ok(null);
@@ -133,7 +169,7 @@ public class ThreadsServiceImpl extends ServiceImpl<ThreadsMapper, Threads> impl
             }
             Users user = usersMapper.selectById(thread.getUserId());
             if (ObjectUtils.isEmpty(user)) {
-                log.error(BadRequestConstant.User_NOT_EXIST);
+                log.error(BadRequestConstant.USER_NOT_EXIST);
                 throw new BadRequestException(ErrorInfoConstant.Msg.SERVER_INTER_ERROR);
             }
             Forums forum = forumsMapper.selectById(thread.getForumId());

@@ -2,7 +2,7 @@ package com.xingxingforum.config;
 
 import com.xingxingforum.config.properties.AuthProperties;
 import com.xingxingforum.filter.CxmRequestValidFilter;
-import com.xingxingforum.interceptor.RoleInterceptor;
+import com.xingxingforum.interceptor.ResponseDataInterceptor;
 import com.xingxingforum.interceptor.UserInfoInterceptor;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -46,8 +46,8 @@ public class ManagerWebConfig implements WebMvcConfigurer {
         return new UserInfoInterceptor();
     };
     @Bean
-    public RoleInterceptor roleInterceptor(){
-        return new RoleInterceptor();
+    public ResponseDataInterceptor responseDataInterceptor(){
+        return new ResponseDataInterceptor();
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ManagerWebConfig implements WebMvcConfigurer {
         // 用户信息拦截器
         registry.addInterceptor(userInfoInterceptor()).excludePathPatterns(authProperties.getNoAuthPaths()).addPathPatterns("/**").order(1);
         // 角色拦截器
-        registry.addInterceptor(roleInterceptor()).excludePathPatterns(authProperties.getNoAuthPaths()).addPathPatterns("/**").order(2);
+        registry.addInterceptor(responseDataInterceptor()).excludePathPatterns(authProperties.getNoAuthPaths()).addPathPatterns("/**").order(2);
     }
 
     @Bean

@@ -17,7 +17,7 @@ public class CxmHttpServletRequestWrapper extends HttpServletRequestWrapper {
 	private byte[] requestBody = new byte[0];
 	private boolean bufferFilled = false;
 	
-	private ConcurrentHashMap<String, String> cxmHeaders = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, String> cxmHeaders = new ConcurrentHashMap<>();
  
 	public CxmHttpServletRequestWrapper(HttpServletRequest request) {
 		super(request);
