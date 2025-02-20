@@ -208,3 +208,18 @@ CREATE TABLE drafts
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id)
 );
+
+CREATE TABLE user_privacy
+(
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id         BIGINT PRIMARY KEY COMMENT '用户ID（关联users.id）',
+    show_thread     TINYINT(1) DEFAULT 1 COMMENT '帖子可见性',
+    show_favorite   TINYINT(1) DEFAULT 1 COMMENT '收藏可见性',
+    show_profession TINYINT(1) DEFAULT 1 COMMENT '职业可见性',
+    show_school     TINYINT(1) DEFAULT 1 COMMENT '学校可见性',
+    allow_search    TINYINT(1) DEFAULT 1 COMMENT '允许被搜索（0:不允许 1:允许）',
+    allow_message   TINYINT(1) DEFAULT 1 COMMENT '允许私信（0:不允许 1:允许）',
+    created_at      TIMESTAMP  DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='用户隐私设置表';

@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,8 +18,9 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageDTO<T> {
-
+public class PageDTO<T> implements Serializable {
+   //因为需要存放到缓存所以需要序列化
+   private static final long serialVersionUID = 1231312312123133L;
     protected Long total;
 
     protected Long pages;
@@ -62,7 +64,6 @@ public class PageDTO<T> {
     public static <T, R> PageDTO<T> of(Page<R> page, Class<T> clazz, Convert<R, T> convert) {
         return new PageDTO<>(page.getTotal(), page.getPages(), BeanUtils.copyList(page.getRecords(), clazz, convert));
     }
-
 
     @JsonIgnore
     public boolean isEmpty(){

@@ -29,7 +29,7 @@ public class ThreadsController {
     @Resource
     private IThreadsService threadsService;
 
-    @ApiOperation(value = "获取热门帖子Page")
+    @ApiOperation(value = "获取帖子列表数据")
     @GetMapping("page")
     public R<PageDTO<ThreadListVO>> threadsPage(ThreadQueryDTO threadQueryDTO) {
         return threadsService.threadsPage(threadQueryDTO);

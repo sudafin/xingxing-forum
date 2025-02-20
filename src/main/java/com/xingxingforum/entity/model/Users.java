@@ -36,6 +36,10 @@ public class Users implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
+    @TableField("privacy_id")
+    @ApiModelProperty(value = "隐私设置id")
+    private Long privacyId;
+
     @TableField("email")
     private String email;
 

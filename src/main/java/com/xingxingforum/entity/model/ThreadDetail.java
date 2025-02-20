@@ -44,6 +44,26 @@ public class ThreadDetail implements Serializable {
     @TableField("view_count")
     private Integer viewCount;
 
+    @ApiModelProperty(value = "是否锁定")
+    @TableField("is_locked")
+    private Boolean isLocked;
+
+    @ApiModelProperty(value = "是否删除")
+    @TableField("is_deleted")
+    private Boolean isDeleted;
+
+    @ApiModelProperty(value = "是否置顶")
+    @TableField("is_top")
+    private Boolean isTop;
+
+    @ApiModelProperty(value = "是否精华")
+    @TableField("is_essence")
+    private Boolean isEssence;
+
+    @ApiModelProperty(value = "是否隐藏")
+    @TableField("is_hidden")
+    private Boolean isHidden;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 
