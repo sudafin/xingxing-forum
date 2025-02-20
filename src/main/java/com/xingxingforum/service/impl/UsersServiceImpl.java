@@ -38,7 +38,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author huangdada
@@ -61,11 +61,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private LikesMapper likesMapper;
     @Resource
     private FileURLConfig fileURLConfig;
+    @Resource
+    private UserPrivacyMapper userPrivacyMapper;
+
     @Override
     public R<Object> register(@NotNull RegisterMailDTO registerMailDTO) {
         //判断邮箱是否存在
         Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getEmail, registerMailDTO.getEmail()));
-        if(user != null){
+        if (user != null) {
+            log.error(BadRequestConstant.USER_EMAIL_EXIST);
             return R.error("邮箱已存在");
         }
         user = new Users();
@@ -73,10 +77,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         String encodePassword = passwordEncoder.encode(registerMailDTO.getPassword());
         user.setPassword(encodePassword);
         user.setEmail(registerMailDTO.getEmail());
-        boolean save = save(user);
-        if(!save){
-            throw new DbException(DBConstant.DATA_SAVE_ERROR);
-        }
+        save(user);
         return R.ok(null);
     }
 
@@ -84,11 +85,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     public R<Object> login(@NotNull LoginFormDTO loginFormDTO) {
         //判断邮箱是否存在
         Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getEmail, loginFormDTO.getEmail()));
-        if(user == null){
+        if (user == null) {
             return R.error(BadRequestConstant.USER_ACCOUNT_PASSWORD_ERROR);
         }
         //密码校验
-        if(!passwordEncoder.matches(loginFormDTO.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(loginFormDTO.getPassword(), user.getPassword())) {
             return R.error(BadRequestConstant.USER_ACCOUNT_PASSWORD_ERROR);
         }
         //生成token
@@ -115,13 +116,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             log.error("生成token失败", e);
             throw new UnauthorizedException(BadRequestConstant.TOKEN_GENERATE_FAILED);
         }
-        return R.ok(LoginVO.builder()
-                .userInfo(userInfoVO)
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .isFirstLogin(StringUtils.isEmpty(user.getNickname()))
-                .build()
-        );
+        return R.ok(LoginVO.builder().userInfo(userInfoVO).token(accessToken).refreshToken(refreshToken).isFirstLogin(StringUtils.isEmpty(user.getNickname())).build());
     }
 
     @Override
@@ -139,8 +134,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         Long userId = UserContextUtils.getUser();
         Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getId, userId));
         if (user == null) {
-            return R.error(BadRequestConstant.USER_NOT_EXIST);
+            log.error(BadRequestConstant.USER_NOT_EXIST);
+            return R.error(BadRequestConstant.SERVER_INTER_ERROR);
         }
+        //先将用户隐私创建
+        UserPrivacy userPrivacy = new UserPrivacy();
+        userPrivacy.setUserId(userId);
+        userPrivacyMapper.insert(userPrivacy);
+        //拿到用户隐私的id
+        userPrivacy = userPrivacyMapper.selectOne(new LambdaQueryWrapper<UserPrivacy>().eq(UserPrivacy::getUserId, userId));
         String avatarURL = fileURLConfig.uploadFile(infoDTO.getAvatar());
         user.setNickname(infoDTO.getUserName());
         user.setBirthday(infoDTO.getBirthday());
@@ -149,6 +151,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         user.setSchool(infoDTO.getSchool());
         user.setAvatar(avatarURL);
         user.setBio(infoDTO.getBio());
+        user.setPrivacyId(userPrivacy.getId());
         List<String> interestModules = infoDTO.getInterestModules();
         List<UserForumRelations> userForumRelationsList = new ArrayList<>();
         for (String interestModule : interestModules) {
@@ -166,7 +169,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     @Override
     public R<UserInfoVO> getUserInfo(Long id) {
         Users user = getById(id);
-        if(user == null){
+        if (user == null) {
             throw new BadRequestException(BadRequestConstant.USER_NOT_EXIST);
         }
         Long userId = UserContextUtils.getUser();

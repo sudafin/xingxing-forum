@@ -22,5 +22,8 @@ public interface BadRequestConstant {
     String FORUM__FAVORITE_CONFLICT = "喜爱操作发生冲突";
     String THREAD_NOT_EXIST = "帖子不存在";
     String USER_PRIVACY_NOT_EXIST = "用户隐私数据不存在";
-    String USER_FAVORITE_NOT_EXIST = "用户没有收藏帖子";
+    String USER_FAVORITE_NOT_EXIST = "用户无收藏帖子";
+    String VERIFICATION_CODE_EXPIRED = "验证码已过期";
+    String VERIFICATION_CODE_ERROR = "验证码错误";
+    String USER_EMAIL_EXIST = "用户邮箱已存在";
 }

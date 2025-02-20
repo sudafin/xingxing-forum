@@ -88,9 +88,11 @@ public class UsersController {
     public R<Object> login(@RequestBody @Valid RegisterMailDTO registerMailDTO) {
         String code = redisTemplate.opsForValue().get(registerMailDTO.getEmail());
         if (code == null) {
+            log.error(BadRequestConstant.VERIFICATION_CODE_EXPIRED);
             return R.error("验证码已过期！");
         }
         if (!StringUtils.equals(code, registerMailDTO.getCode())) {
+            log.error(BadRequestConstant.VERIFICATION_CODE_ERROR);
             return R.error("验证码错误！");
         }
         return usersService.register(registerMailDTO);
